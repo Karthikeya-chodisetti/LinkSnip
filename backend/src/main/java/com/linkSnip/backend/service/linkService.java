@@ -1,6 +1,7 @@
 package com.linkSnip.backend.service;
 
 import com.linkSnip.backend.entity.link;
+import com.linkSnip.backend.exception.CustomException;
 import com.linkSnip.backend.repository.linkRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,13 +17,28 @@ public class linkService {
         this.repo = repo;
     }
 
-    public link createShortLink(String url) {
+    public link createShortLink(String url, String customAlias) {
+
+        if (url == null || (!url.startsWith("http://") && !url.startsWith("https://"))) {
+            throw new CustomException("Invalid URL");
+        }
 
         String code;
 
-        do {
-            code = generateCode();
-        } while (repo.findByShortCode(code).isPresent());
+        if (customAlias != null && !customAlias.isBlank()) {
+
+            if (repo.findByShortCode(customAlias).isPresent()) {
+                throw new CustomException("Alias already exists");
+            }
+
+            code = customAlias;
+
+        } else {
+
+            do {
+                code = generateCode();
+            } while (repo.findByShortCode(code).isPresent());
+        }
 
         link link = new link();
 
@@ -34,6 +50,7 @@ public class linkService {
     }
 
     private String generateCode() {
+
         String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
         StringBuilder sb = new StringBuilder();
@@ -50,7 +67,7 @@ public class linkService {
     public String getOriginalUrl(String code) {
 
         link link = repo.findByShortCode(code)
-                .orElseThrow(() -> new RuntimeException("Link not found"));
+                .orElseThrow(() -> new CustomException("Link not found"));
 
         return link.getOriginalUrl();
     }

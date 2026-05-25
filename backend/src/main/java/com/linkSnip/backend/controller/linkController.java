@@ -25,7 +25,9 @@ public class linkController {
     @PostMapping
     public Map<String, String> create(@RequestBody Map<String, String> body) {
 
-        link link = service.createShortLink(body.get("url"));
+        link link = service.createShortLink(
+                body.get("url"),
+                body.get("customAlias"));
 
         return Map.of("shortUrl", "http://localhost:8080/api/links/" + link.getShortCode());
     }
