@@ -1,5 +1,8 @@
 package com.linkSnip.backend.controller;
 
+import com.linkSnip.backend.dto.CreateLinkRequest;
+import com.linkSnip.backend.dto.LinkAnalyticsResponse;
+import com.linkSnip.backend.dto.LinkResponse;
 import com.linkSnip.backend.entity.link;
 import com.linkSnip.backend.service.linkService;
 
@@ -8,8 +11,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.http.HttpHeaders;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/links")
@@ -23,13 +24,15 @@ public class linkController {
     }
 
     @PostMapping
-    public Map<String, String> create(@RequestBody Map<String, String> body) {
+    public LinkResponse create(@RequestBody CreateLinkRequest request) {
 
         link link = service.createShortLink(
-                body.get("url"),
-                body.get("customAlias"));
-
-        return Map.of("shortUrl", "http://localhost:8080/api/links/" + link.getShortCode());
+                request.getUrl(),
+                request.getCustomAlias(),
+                request.getTtlValue(),
+                request.getTtlUnit());
+        return new LinkResponse(
+                "http://localhost:8080/api/links/" + link.getShortCode());
     }
 
     @GetMapping("/{code}")
@@ -41,5 +44,11 @@ public class linkController {
                 .status(HttpStatus.FOUND)
                 .header(HttpHeaders.LOCATION, url)
                 .build();
+    }
+
+    @GetMapping("/{code}/analytics")
+    public ResponseEntity<LinkAnalyticsResponse> analytics(@PathVariable String code) {
+
+        return ResponseEntity.ok(service.getAnalytics(code));
     }
 }

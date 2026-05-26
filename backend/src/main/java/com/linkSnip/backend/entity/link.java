@@ -21,6 +21,8 @@ public class link {
     @Column(unique = true)
     private String shortCode;
 
+    private Long clicks = 0L;
+
     private LocalDateTime createdAt;
 
     private LocalDateTime expiryAt;
