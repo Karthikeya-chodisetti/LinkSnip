@@ -9,6 +9,7 @@ import com.linkSnip.backend.service.linkService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import org.springframework.http.HttpHeaders;
 
@@ -50,5 +51,22 @@ public class linkController {
     public ResponseEntity<LinkAnalyticsResponse> analytics(@PathVariable String code) {
 
         return ResponseEntity.ok(service.getAnalytics(code));
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyLinks(Authentication authentication) {
+
+        String email = authentication.getName();
+
+        return ResponseEntity.ok(
+                service.getUserLinks(email));
+    }
+
+    @DeleteMapping("/{code}")
+    public ResponseEntity<?> delete(@PathVariable String code, Authentication authentication) {
+
+        service.deleteLink(code, authentication.getName());
+
+        return ResponseEntity.ok("Deleted Successfully");
     }
 }

@@ -16,14 +16,21 @@ public class link {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(length = 2000)
     private String originalUrl;
 
     @Column(unique = true)
     private String shortCode;
+
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     private Long clicks = 0L;
 
     private LocalDateTime createdAt;
 
     private LocalDateTime expiryAt;
+
+    private boolean expired;
 }

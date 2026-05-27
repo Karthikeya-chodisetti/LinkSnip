@@ -4,12 +4,21 @@ import java.time.LocalDateTime;
 
 public class LinkAnalyticsResponse {
 
+    private Long id;
     private String originalUrl;
     private String shortCode;
     private Long clicks;
     private LocalDateTime createdAt;
     private LocalDateTime expiryAt;
     private boolean expired;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public String getOriginalUrl() {
         return originalUrl;

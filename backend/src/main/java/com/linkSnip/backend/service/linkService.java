@@ -2,21 +2,27 @@ package com.linkSnip.backend.service;
 
 import com.linkSnip.backend.entity.link;
 import com.linkSnip.backend.exception.CustomException;
+import com.linkSnip.backend.repository.UserRepository;
 import com.linkSnip.backend.repository.linkRepository;
 import com.linkSnip.backend.dto.LinkAnalyticsResponse;
+import com.linkSnip.backend.dto.LinkResponse;
+import com.linkSnip.backend.entity.User;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Random;
+import java.util.*;
 
 @Service
 public class linkService {
 
     private final linkRepository repo;
+    private final UserRepository userRepo;
 
-    public linkService(linkRepository repo) {
+    public linkService(linkRepository repo, UserRepository userRepo) {
         this.repo = repo;
+        this.userRepo = userRepo;
     }
 
     public link createShortLink(String url, String customAlias, Integer ttlValue, String ttlUnit) {
@@ -71,6 +77,14 @@ public class linkService {
             }
             link.setExpiryAt(expiryTime);
         }
+
+        String email = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new CustomException("User not found"));
+
+        link.setUser(user);
+
         return repo.save(link);
     }
 
@@ -124,5 +138,42 @@ public class linkService {
         response.setExpired(expired);
 
         return response;
+    }
+
+    public List<LinkAnalyticsResponse> getUserLinks(String email) {
+
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new CustomException("User not found"));
+
+        List<link> links = repo.findByUser(user);
+
+        return links.stream().map(this::mapToResponse).toList();
+    }
+
+    private LinkAnalyticsResponse mapToResponse(link link) {
+
+        LinkAnalyticsResponse response = new LinkAnalyticsResponse();
+
+        response.setId(link.getId());
+        response.setOriginalUrl(link.getOriginalUrl());
+        response.setShortCode(link.getShortCode());
+        response.setClicks(link.getClicks());
+        response.setCreatedAt(link.getCreatedAt());
+        response.setExpiryAt(link.getExpiryAt());
+        response.setExpired(link.isExpired());
+
+        return response;
+    }
+
+    public void deleteLink(String code, String email) {
+
+        link link = repo.findByShortCode(code)
+                .orElseThrow(() -> new CustomException("Link not found"));
+
+        if (!link.getUser().getEmail().equals(email)) {
+            throw new CustomException("Unauthorized");
+        }
+
+        repo.delete(link);
     }
 }
