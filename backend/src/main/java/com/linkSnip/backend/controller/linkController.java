@@ -5,11 +5,13 @@ import com.linkSnip.backend.dto.LinkAnalyticsResponse;
 import com.linkSnip.backend.dto.LinkResponse;
 import com.linkSnip.backend.entity.link;
 import com.linkSnip.backend.service.linkService;
+import com.linkSnip.backend.util.QrCodeGenerator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.Authentication;
+import org.springframework.beans.factory.annotation.Value;
 
 import org.springframework.http.HttpHeaders;
 
@@ -24,6 +26,9 @@ public class linkController {
         this.service = service;
     }
 
+    @Value("${app.base-url}")
+    private String baseUrl;
+
     @PostMapping
     public LinkResponse create(@RequestBody CreateLinkRequest request) {
 
@@ -33,7 +38,7 @@ public class linkController {
                 request.getTtlValue(),
                 request.getTtlUnit());
         return new LinkResponse(
-                "http://localhost:8080/api/links/" + link.getShortCode());
+                baseUrl + "/api/links/" + link.getShortCode());
     }
 
     @GetMapping("/{code}")
@@ -68,5 +73,20 @@ public class linkController {
         service.deleteLink(code, authentication.getName());
 
         return ResponseEntity.ok("Deleted Successfully");
+    }
+
+    @GetMapping("/qr/{code}")
+    public ResponseEntity<byte[]> generateQr(@PathVariable String code)
+            throws Exception {
+
+        link link = service.getLinkEntity(code);
+
+        String shortUrl = baseUrl + "/api/links/" + link.getShortCode();
+
+        byte[] qr = QrCodeGenerator.generateQrCode(shortUrl, 250, 250);
+
+        return ResponseEntity.ok()
+                .header("Content-Type", "image/png")
+                .body(qr);
     }
 }

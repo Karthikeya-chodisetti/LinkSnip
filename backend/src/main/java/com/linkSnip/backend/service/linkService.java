@@ -54,9 +54,9 @@ public class linkService {
         link.setShortCode(code);
         link.setCreatedAt(LocalDateTime.now());
 
-        if (ttlValue != null && ttlUnit != null) {
+        LocalDateTime expiryTime;
 
-            LocalDateTime expiryTime;
+        if (ttlValue != null && ttlUnit != null) {
 
             switch (ttlUnit.toUpperCase()) {
 
@@ -75,8 +75,17 @@ public class linkService {
                 default:
                     throw new CustomException("Invalid TTL Unit");
             }
-            link.setExpiryAt(expiryTime);
+
+        } else {
+
+            expiryTime = LocalDateTime.now().plusDays(30);
         }
+
+        if (expiryTime.isAfter(LocalDateTime.now().plusDays(30))) {
+            throw new CustomException("Expiry cannot exceed 30 days");
+        }
+
+        link.setExpiryAt(expiryTime);
 
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
@@ -175,5 +184,11 @@ public class linkService {
         }
 
         repo.delete(link);
+    }
+
+    public link getLinkEntity(String code) {
+
+        return repo.findByShortCode(code)
+                .orElseThrow(() -> new CustomException("Link not found"));
     }
 }
