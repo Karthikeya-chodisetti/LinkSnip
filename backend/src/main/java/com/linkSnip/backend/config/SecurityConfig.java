@@ -4,6 +4,7 @@ import com.linkSnip.backend.security.JwtFilter;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,6 +44,8 @@ public class SecurityConfig {
             throws Exception {
 
         http
+                .cors(cors -> {
+                })
                 .csrf(csrf -> csrf.disable())
 
                 .sessionManagement(session -> session.sessionCreationPolicy(
@@ -53,12 +56,16 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/auth/**",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**")
+                                "/v3/api-docs/**",
+                                "/api/links/**")
+                        .permitAll()
+
+                        .requestMatchers(HttpMethod.OPTIONS, "/**")
                         .permitAll()
 
                         .anyRequest().authenticated())
-                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(rateLimitFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

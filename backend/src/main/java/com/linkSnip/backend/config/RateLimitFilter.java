@@ -47,6 +47,8 @@ public class RateLimitFilter extends OncePerRequestFilter {
                 response.setStatus(429);
                 response.getWriter().write("Too many requests");
             }
+            System.out.println(path);
+            return;
 
         } else {
             filterChain.doFilter(request, response);

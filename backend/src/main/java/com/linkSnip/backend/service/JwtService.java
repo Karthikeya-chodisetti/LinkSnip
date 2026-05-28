@@ -40,19 +40,20 @@ public class JwtService {
         return claims.getSubject();
     }
 
-    public boolean isValid(String token) {
+    public boolean isValid(String token, String email) {
 
         try {
-
-            Jwts.parser()
+            Claims claims = Jwts.parser()
                     .verifyWith(getKey())
                     .build()
-                    .parseSignedClaims(token);
+                    .parseSignedClaims(token)
+                    .getPayload();
 
-            return true;
+            String tokenEmail = claims.getSubject();
+
+            return tokenEmail.equals(email);
 
         } catch (Exception e) {
-
             return false;
         }
     }

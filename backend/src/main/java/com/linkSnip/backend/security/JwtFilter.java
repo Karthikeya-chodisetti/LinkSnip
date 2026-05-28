@@ -49,7 +49,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
             UserDetails userDetails = userDetailsService.loadUserByUsername(email);
 
-            if (jwtService.isValid(token)) {
+            if (jwtService.isValid(token, email)) {
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
@@ -62,6 +62,10 @@ public class JwtFilter extends OncePerRequestFilter {
 
                 SecurityContextHolder.getContext()
                         .setAuthentication(authToken);
+            } else {
+                response.getWriter().write("Invalid token");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
             }
         }
         filterChain.doFilter(request, response);

@@ -154,7 +154,11 @@ public class linkService {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new CustomException("User not found"));
 
-        List<link> links = repo.findByUser(user);
+        List<link> links = repo.findByUser(user)
+                .stream()
+                .filter(link -> link.getExpiryAt() == null ||
+                        link.getExpiryAt().isAfter(LocalDateTime.now()))
+                .toList();
 
         return links.stream().map(this::mapToResponse).toList();
     }
