@@ -140,7 +140,6 @@ Content-Type: application/json
 
 {
   "url": "https://www.example.com/some/very/long/path",
-  "customAlias": "mylink",
   "ttlValue": 7,
   "ttlUnit": "DAYS"
 }
@@ -149,19 +148,10 @@ Content-Type: application/json
 **Response**
 ```json
 {
-  "shortUrl": "http://localhost:8080/api/links/mylink"
+  "shortUrl": "https://linksnip.app/aG1tYf"
 }
 ```
 
----
-
-## Future Improvements
-
-- Google / GitHub OAuth login
-- Link click graphs and geo-analytics
-- Categories and tags for links
-- Dark mode UI
-- Mobile app version
 
 
 
